@@ -19,4 +19,10 @@ If training and testing files with different names are desired to be used, the f
 
 ### Output
 
+The program will classify the test data using Naive Bayes classification.  
 
+The classifications are written to a .csv in the root directory of the project, titled "naive_bayes_classified.csv".
+
+## Logistic Regression
+
+### Description

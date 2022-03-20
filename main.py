@@ -47,8 +47,15 @@ def write_csv(class_list):
 def main():
 
     # make dataframe for training data
-    training_file = sys.argv[1]
-    testing_file = sys.argv[2]
+    if len(sys.argv) == 1:
+        training_file = 'training.csv'
+        testing_file = 'testing.csv'
+    elif len(sys.argv) == 3:
+        training_file = sys.argv[1]
+        testing_file = sys.argv[2]
+    else:
+        sys.exit('Please run program as specified in README with training and testing csv files as first and second command line arguments.')
+
     train_df = build_dataframe('data/' + training_file)
     test_df = build_dataframe('data/' + testing_file)
     # print(train_df)
