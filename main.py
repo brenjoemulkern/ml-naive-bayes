@@ -6,6 +6,8 @@ from log_regression import LogisticRegressionClassifier
 
 from naive_bayes import NaiveBayesClassifier
 
+np.random.seed(0)
+
 
 def build_dataframe(csv_file):
     # make dataframe from csv
@@ -36,22 +38,21 @@ def build_delta_matrix(class_array):
     return delta_array.transpose()
 
 def build_X_array(data):
-    data = np.asarray(data)[0:, 1:61189]
+    data = np.asarray(data)[:, 1:61189]
     ones_column = np.array([np.ones(data.shape[0], dtype=int)])
     normal_data = data/data.sum(axis=1, keepdims=True)
     X_array = np.concatenate((ones_column.T, normal_data), axis=1)
     return X_array
 
 def build_W_matrix(row_count):
-    Z = np.zeros((row_count, 61189), dtype=int)
-    # last_row = np.array([np.ones(61189, dtype=int)])
-    # W = np.concatenate((Z, last_row), axis=0)
-    return Z
+    W = np.random.rand(row_count, 61189)
+    W[:, -1] = 0
+    return W
 
 def write_csv(class_list, filename):
     print('Writing csv')
     filename = filename + '.csv'
-    class_indices = np.arange(12001, 12005)
+    class_indices = np.arange(12001, 18775)
     class_array = np.asarray(class_list)
     full_array = np.concatenate(([class_indices], [class_array]), axis=0)
     full_array_transpose = np.transpose(full_array)
@@ -105,21 +106,22 @@ def main():
     W = build_W_matrix(len(train_df_class_list))
 
     # make prob_Y_WX
-    W_tran = W.T
-    prob_Y_WX = np.exp(np.matmul(X, W_tran))
+    X_tran = X.T
+    
 
     
-    lrc = LogisticRegressionClassifier(m=train_df.shape[0], 
+    lrc = LogisticRegressionClassifier(
+                                       m=train_df.shape[0], 
                                        k=len(train_df_class_list), 
                                        n=61188, eta=0.01, 
                                        lamb=0.01, 
                                        delta = delta,
                                        X=X,
                                        Y=Y,
-                                       W=W,
-                                       prob_Y_WX=prob_Y_WX)
+                                       W=W
+                                       )
 
-    weights_array = lrc.create_weights(10000)
+    weights_array = lrc.create_weights(1000)
     print(weights_array.shape)
 
     class_list = lrc.classify(test_df)
