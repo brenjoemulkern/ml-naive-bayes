@@ -1,7 +1,9 @@
 from cgi import test
+from curses import KEY_REPLACE
 import numpy as np
 import pandas as pd
 import scipy.sparse as scp
+import scipy.special
 
 class LogisticRegressionClassifier:
 
@@ -27,15 +29,19 @@ class LogisticRegressionClassifier:
         self.W = W
 
     def update_step(self):
-        prob_Y_WX = np.exp(np.matmul(self.W, self.X_tran))
-        prob_Y_WX[-1, :] = 1
+        prob_Y_WX = scipy.special.softmax(np.matmul(self.W, self.X_tran))
+        # prob_Y_WX = np.exp(np.matmul(self.W, self.X_tran))
+        # prob_Y_WX[-1, :] = 1
         prob_Y_WX_norm = prob_Y_WX/prob_Y_WX.sum(axis=0, keepdims=True)
 
         term1 = self.delta - prob_Y_WX_norm
         term2 = self.lamb * self.W
         term1_m = np.matmul(term1, self.X)
+
+        W_norm = self.W/self.W.sum(axis=1, keepdims=True)
         
         W_t_next = self.W + (self.eta * (term1_m - term2))
+        # W_t_next[:, -1] = 0
         self.W = W_t_next
 
     def create_weights(self, iterations):
@@ -48,6 +54,8 @@ class LogisticRegressionClassifier:
         print('Multiplying matrices...')
         test_matrix = test_data.to_numpy()
         test_matrix[:, 0] = 1
+        # normal_data = test_matrix/test_matrix.sum(axis=1, keepdims=True)
+        # normal_data[:, 0] = 1
         classified_matrix = np.matmul(test_matrix, self.W.T)
         print(classified_matrix)
         

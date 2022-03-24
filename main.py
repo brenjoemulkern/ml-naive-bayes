@@ -49,10 +49,10 @@ def build_W_matrix(row_count):
     W[:, -1] = 0
     return W
 
-def write_csv(class_list, filename):
+def write_csv(class_list, filename, start_row, end_row):
     print('Writing csv')
     filename = filename + '.csv'
-    class_indices = np.arange(12001, 18775)
+    class_indices = np.arange(start_row, end_row)
     class_array = np.asarray(class_list)
     full_array = np.concatenate(([class_indices], [class_array]), axis=0)
     full_array_transpose = np.transpose(full_array)
@@ -104,11 +104,6 @@ def main():
 
     # make W matrix
     W = build_W_matrix(len(train_df_class_list))
-
-    # make prob_Y_WX
-    X_tran = X.T
-    
-
     
     lrc = LogisticRegressionClassifier(
                                        m=train_df.shape[0], 
@@ -125,7 +120,7 @@ def main():
     print(weights_array.shape)
 
     class_list = lrc.classify(test_df)
-    write_csv(class_list, 'log_regression_classified')
+    write_csv(class_list, 'log_regression_classified', 12001, class_list.shape[0] + 12001)
 
 if __name__ == "__main__":
     main()
