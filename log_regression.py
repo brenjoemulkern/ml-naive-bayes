@@ -1,13 +1,11 @@
 from cgi import test
-from curses import KEY_REPLACE
 import numpy as np
 import pandas as pd
 import scipy.sparse as scp
-import scipy.special
 
 class LogisticRegressionClassifier:
 
-    def __init__(self, m, k, n, eta, lamb, delta, X, x_col_sums, Y, W):
+    def __init__(self, m, k, n, eta, lamb, delta, X: scp.csr_matrix, x_col_sums, Y, W: scp.csr_matrix):
         # m = number of examples
         self.m = m
         # k = number of classes
@@ -22,7 +20,7 @@ class LogisticRegressionClassifier:
         self.delta = delta
         # X = m * (n+1) matrix of examples where first column is all 1s and the rest are the attributes
         self.X = X
-        self.X_tran = X.T
+        self.X_tran = X.transpose()
         self.x_col_sums = x_col_sums
         # Y = m * 1 vector of true classifications
         self.Y = Y
@@ -30,13 +28,15 @@ class LogisticRegressionClassifier:
         self.W = W
 
     def update_step(self):
-        prob_Y_WX = np.exp(np.matmul(self.W, self.X_tran))
+        WX_T = self.W @ self.X_tran
+        WX_T_full = WX_T.toarray()
+        prob_Y_WX = np.exp(WX_T_full)
         # prob_Y_WX[-1, :] = 1
         prob_Y_WX_norm = prob_Y_WX/prob_Y_WX.sum(axis=0, keepdims=True)
 
-        term1 = self.delta - prob_Y_WX_norm
+        term1 = scp.csr_matrix(self.delta - prob_Y_WX_norm)
         term2 = self.lamb * self.W
-        term1_m = np.matmul(term1, self.X)
+        term1_m = term1 @ self.X
 
         W_t_next = self.W + (self.eta * (term1_m - term2))
         # W_t_next[:, -1] = 0
@@ -45,6 +45,8 @@ class LogisticRegressionClassifier:
     def create_weights(self, iterations):
         for i in range(0, iterations):
             self.update_step()
+            if i % 100 == 0:
+                print('Step', i)
 
         return self.W
 
@@ -60,7 +62,10 @@ class LogisticRegressionClassifier:
         # normal_data[:, 0] = 1
 
         normal_matrix = np.concatenate((ones_column.T, normal_matrix), axis=1)
-        classified_matrix = np.matmul(normal_matrix, self.W.T)
+        sparse_normal_matrix = scp.csr_matrix(normal_matrix)
+
+        classified_sparse_matrix = sparse_normal_matrix @ (self.W.transpose())
+        classified_matrix = classified_sparse_matrix.toarray()
         print(classified_matrix)
         
         print('Finding maximums...')
