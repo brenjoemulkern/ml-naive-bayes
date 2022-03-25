@@ -39,10 +39,13 @@ def build_delta_matrix(class_array):
 
 def build_X_array(data):
     data = np.asarray(data)[:, 1:61189]
-    ones_column = np.array([np.ones(data.shape[0], dtype=int)])
-    normal_data = data/data.sum(axis=1, keepdims=True)
+    ones_column = np.array([np.ones(data.shape[0], dtype=float)])
+    x_col_sums = data.sum(axis = 0)
+    x_col_sums[x_col_sums == 0] = 1
+    normal_data = (data.T / x_col_sums[:, np.newaxis]).T
     X_array = np.concatenate((ones_column.T, normal_data), axis=1)
-    return X_array
+    print('Making X Array')
+    return X_array, x_col_sums
 
 def build_W_matrix(row_count):
     W = np.random.rand(row_count, 61189)
@@ -100,7 +103,7 @@ def main():
     delta = build_delta_matrix(Y)
 
     # make X array
-    X = build_X_array(train_df)
+    X, x_col_sums = build_X_array(train_df)
 
     # make W matrix
     W = build_W_matrix(len(train_df_class_list))
@@ -112,6 +115,7 @@ def main():
                                        lamb=0.01, 
                                        delta = delta,
                                        X=X,
+                                       x_col_sums = x_col_sums,
                                        Y=Y,
                                        W=W
                                        )
