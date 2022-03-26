@@ -24,6 +24,11 @@ def split_training_data(training_data: pd.DataFrame):
 
     return split_training_df, split_testing_df
 
+def get_truth_data(training_data: pd.DataFrame):
+    truth = training_data.iloc[:, 61189:]
+    truth_np = truth.to_numpy()
+    write_csv(truth_np, 'ground_truth_data', 12001, truth_np.shape[0] + 12001)
+
 def partition_data(data: pd.DataFrame, class_index: int):
     # returns a list of sparse matrices, each contains all documents of a specific class
     partitioned_data = []
@@ -94,9 +99,11 @@ def main():
     if process_data == 0:
         train_df = build_dataframe('data/' + training_file)
         test_df = build_dataframe('data/' + testing_file)
+
     elif process_data == 1:
         full_df = build_dataframe('data/' + training_file)
         train_df, test_df = split_training_data(full_df)
+        get_truth_data(test_df)
 
     # create sparse matrix for training data
     sparse_train_data = scp.csr_matrix(train_df.values)
