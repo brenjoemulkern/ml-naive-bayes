@@ -11,11 +11,23 @@ np.random.seed(0)
 
 def build_dataframe(csv_file):
     # make dataframe from csv
+    print('Making dataframe from file:', csv_file)
     d_frame = pd.read_csv(csv_file, header=None)
-    print('Making dataframe from file: ', csv_file)
+    print('Dataframe complete.')
     print('Number of rows: ', d_frame.shape[0])
     print('Number of columns: ', d_frame.shape[1])
     return d_frame
+
+def split_training_data(training_data: pd.DataFrame):
+    split_training_df = training_data.iloc[:9601, :]
+    split_testing_df = training_data.iloc[9601:, :61189]
+
+    return split_training_df, split_testing_df
+
+def get_truth_data(training_data: pd.DataFrame):
+    truth = training_data.iloc[:, 61189:]
+    truth_np = truth.to_numpy()
+    write_csv(truth_np, 'ground_truth_data', 12001, truth_np.shape[0] + 12001)
 
 def partition_data(data: pd.DataFrame, class_index: int):
     # returns a list of sparse matrices, each contains all documents of a specific class
@@ -39,20 +51,22 @@ def build_delta_matrix(class_array):
 
 def build_X_array(data):
     data = np.asarray(data)[:, 1:61189]
-    ones_column = np.array([np.ones(data.shape[0], dtype=int)])
-    normal_data = data/data.sum(axis=1, keepdims=True)
+    ones_column = np.array([np.ones(data.shape[0], dtype=float)])
+    x_col_sums = data.sum(axis = 0)
+    x_col_sums[x_col_sums == 0] = 1
+    normal_data = (data.T / x_col_sums[:, np.newaxis]).T
     X_array = np.concatenate((ones_column.T, normal_data), axis=1)
-    return X_array
+    return scp.csr_matrix(X_array), x_col_sums
 
 def build_W_matrix(row_count):
     W = np.random.rand(row_count, 61189)
     W[:, -1] = 0
-    return W
+    return scp.csr_matrix(W)
 
-def write_csv(class_list, filename):
+def write_csv(class_list, filename, start_row, end_row):
     print('Writing csv')
     filename = filename + '.csv'
-    class_indices = np.arange(12001, 18775)
+    class_indices = np.arange(start_row, end_row)
     class_array = np.asarray(class_list)
     full_array = np.concatenate(([class_indices], [class_array]), axis=0)
     full_array_transpose = np.transpose(full_array)
@@ -60,19 +74,36 @@ def write_csv(class_list, filename):
     full_dataframe.to_csv(filename, index=False)
 
 def main():
-
+    process_data = 0
     # make dataframe for training data
     if len(sys.argv) == 1:
-        training_file = 'dummy_data.csv'
-        testing_file = 'dummy_test.csv'
+        training_file = 'training.csv'
+        testing_file = 'testing.csv'
+        process_data = 0
+    
+    elif len(sys.argv) == 2 and sys.argv[1] == '-val':
+        training_file = 'training.csv'
+        process_data = 1
+   
+    elif len(sys.argv) == 3 and sys.argv[1] == '-val':
+        training_file = sys.argv[2]
+        process_data = 1
+
     elif len(sys.argv) == 3:
         training_file = sys.argv[1]
         testing_file = sys.argv[2]
+    
     else:
         sys.exit('Please run program as specified in README with training and testing csv files as first and second command line arguments.')
 
-    train_df = build_dataframe('data/' + training_file)
-    test_df = build_dataframe('data/' + testing_file)
+    if process_data == 0:
+        train_df = build_dataframe('data/' + training_file)
+        test_df = build_dataframe('data/' + testing_file)
+
+    elif process_data == 1:
+        full_df = build_dataframe('data/' + training_file)
+        train_df, test_df = split_training_data(full_df)
+        get_truth_data(test_df)
 
     # create sparse matrix for training data
     sparse_train_data = scp.csr_matrix(train_df.values)
@@ -100,32 +131,28 @@ def main():
     delta = build_delta_matrix(Y)
 
     # make X array
-    X = build_X_array(train_df)
+    X, x_col_sums = build_X_array(train_df)
 
     # make W matrix
     W = build_W_matrix(len(train_df_class_list))
-
-    # make prob_Y_WX
-    X_tran = X.T
-    
-
     
     lrc = LogisticRegressionClassifier(
                                        m=train_df.shape[0], 
                                        k=len(train_df_class_list), 
-                                       n=61188, eta=0.01, 
+                                       n=61188, eta=0.007, 
                                        lamb=0.01, 
                                        delta = delta,
                                        X=X,
+                                       x_col_sums = x_col_sums,
                                        Y=Y,
                                        W=W
                                        )
 
-    weights_array = lrc.create_weights(1000)
+    weights_array = lrc.create_weights(10000)
     print(weights_array.shape)
 
     class_list = lrc.classify(test_df)
-    write_csv(class_list, 'log_regression_classified')
+    write_csv(class_list, 'log_regression_classified', 12001, class_list.shape[0] + 12001)
 
 if __name__ == "__main__":
     main()
