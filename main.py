@@ -25,9 +25,9 @@ def split_training_data(training_data: pd.DataFrame):
     return split_training_df, split_testing_df
 
 def get_truth_data(training_data: pd.DataFrame):
-    truth = training_data.iloc[:, 61189:]
+    truth = training_data.iloc[9601:, 61189:]
     truth_np = truth.to_numpy()
-    write_csv(truth_np, 'ground_truth_data', 12001, truth_np.shape[0] + 12001)
+    write_csv(truth_np.flatten(), 'ground_truth_data', 12001, truth_np.shape[0] + 12001)
 
 def partition_data(data: pd.DataFrame, class_index: int):
     # returns a list of sparse matrices, each contains all documents of a specific class
@@ -103,7 +103,7 @@ def main():
     elif process_data == 1:
         full_df = build_dataframe('data/' + training_file)
         train_df, test_df = split_training_data(full_df)
-        get_truth_data(test_df)
+        # get_truth_data(full_df)
 
     # create sparse matrix for training data
     sparse_train_data = scp.csr_matrix(train_df.values)
@@ -139,7 +139,7 @@ def main():
     lrc = LogisticRegressionClassifier(
                                        m=train_df.shape[0], 
                                        k=len(train_df_class_list), 
-                                       n=61188, eta=0.007, 
+                                       n=61188, eta=0.009, 
                                        lamb=0.01, 
                                        delta = delta,
                                        X=X,
