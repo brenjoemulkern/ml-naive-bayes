@@ -31,7 +31,6 @@ class NaiveBayesClassifier:
         summed_xs = (np.sum(data, axis=0)).flatten()
         
         total_words = np.sum(summed_xs[0:, 1:61189])
-        # print('Total words in class %d: %d' % (class_id, total_words))
 
         # numerator is total number of individual words plus alpha-1
         numerator = summed_xs[0:, 1:61189] + (alpha - 1)

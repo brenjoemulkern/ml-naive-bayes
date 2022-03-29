@@ -74,24 +74,66 @@ def write_csv(class_list, filename, start_row, end_row):
     full_dataframe.to_csv(filename, index=False)
 
 def main():
+    # use this to direct command line args
     process_data = 0
-    # make dataframe for training data
+    run_nb = 0
+    run_lr = 0
+
+
     if len(sys.argv) == 1:
         training_file = 'training.csv'
         testing_file = 'testing.csv'
         process_data = 0
+        run_nb = 1
+        run_lr = 1
     
     elif len(sys.argv) == 2 and sys.argv[1] == '-val':
         training_file = 'training.csv'
         process_data = 1
-   
-    elif len(sys.argv) == 3 and sys.argv[1] == '-val':
-        training_file = sys.argv[2]
-        process_data = 1
+        run_nb = 1
+        run_lr = 1
 
-    elif len(sys.argv) == 3:
+    elif len(sys.argv) == 2 and sys.argv[1] == '-nb':
+        training_file = 'training.csv'
+        testing_file = 'testing.csv'
+        process_data = 0
+        run_nb = 1
+
+    elif len(sys.argv) == 2 and sys.argv[1] == '-lr':
+        training_file = 'training.csv'
+        testing_file = 'testing.csv'
+        process_data = 0
+        run_nb = 1
+   
+    elif len(sys.argv) == 3 and sys.argv[1] == '-val' and sys.argv[2] == '-nb':
+        training_file = 'training.csv'
+        testing_file = 'testing.csv'
+        process_data = 1
+        run_nb = 1
+
+    elif len(sys.argv) == 3 and sys.argv[1] == '-val' and sys.argv[2] == '-lr':
+        training_file = 'training.csv'
+        testing_file = 'testing.csv'
+        process_data = 1
+        run_lr = 1
+
+    elif len(sys.argv) == 3 and sys.argv[1] == '-val' and sys.argv[2].endswith('.csv'):
+        process_data = 1
+        run_lr = 1
+
+    elif len(sys.argv) == 3 and sys.argv[1].endswith('.csv') and sys.argv[2].endswith('.csv'):
         training_file = sys.argv[1]
         testing_file = sys.argv[2]
+
+    elif len(sys.argv) == 4 and sys.argv[1] == '-nb' and sys.argv[2].endswith('.csv') and sys.argv[3].endswith('.csv'):
+        training_file = sys.argv[2]
+        testing_file = sys.argv[3]
+        run_nb = 1
+
+    elif len(sys.argv) == 4 and sys.argv[1] == '-lr' and sys.argv[2].endswith('.csv') and sys.argv[3].endswith('.csv'):
+        training_file = sys.argv[2]
+        testing_file = sys.argv[3]
+        run_lr = 1
     
     else:
         sys.exit('Please run program as specified in README with training and testing csv files as first and second command line arguments.')
@@ -111,48 +153,55 @@ def main():
     # parition data by class
     train_df_class_list = partition_data(train_df, 61189)
 
-    """
-    # Naive Bayes Classification Code
-    nbc = NaiveBayesClassifier(sparse_train_data)
-    class_list = []
 
-    # classify each row in the test data
-    for row in test_df.to_numpy():
-        new_class = nbc.classify(row, train_df_class_list)
-        print('Classifying document', row[0])
-        class_list.append(new_class)
+    """ run this block for naive bayes """
+    if run_nb == 1:
+        print('Running Naive Bayes Classification')
+        # Naive Bayes Classification Code
+        nbc = NaiveBayesClassifier(sparse_train_data)
+        class_list = []
 
-    write_csv(class_list)
-    """
-    # make Y vector
-    Y = sparse_train_data.getcol(61189)
+        # classify each row in the test data
+        for row in test_df.to_numpy():
+            new_class = nbc.classify(row, train_df_class_list)
+            class_list.append(new_class)
+            if row[0] % 100 == 0:
+                print('Classifying document', row[0])
 
-    # make delta matrix for lgr
-    delta = build_delta_matrix(Y)
-
-    # make X array
-    X, x_col_sums = build_X_array(train_df)
-
-    # make W matrix
-    W = build_W_matrix(len(train_df_class_list))
+        write_csv(class_list, 'naive_bayes_classified', 12001, len(class_list) + 12001)
     
-    lrc = LogisticRegressionClassifier(
-                                       m=train_df.shape[0], 
-                                       k=len(train_df_class_list), 
-                                       n=61188, eta=0.009, 
-                                       lamb=0.01, 
-                                       delta = delta,
-                                       X=X,
-                                       x_col_sums = x_col_sums,
-                                       Y=Y,
-                                       W=W
-                                       )
+    """ run this block for log regression """
+    if run_lr == 1:
+        print('Running Logistic Regression Classification')
+        # make Y vector
+        Y = sparse_train_data.getcol(61189)
 
-    weights_array = lrc.create_weights(10000)
-    print(weights_array.shape)
+        # make delta matrix for lgr
+        delta = build_delta_matrix(Y)
 
-    class_list = lrc.classify(test_df)
-    write_csv(class_list, 'log_regression_classified', 12001, class_list.shape[0] + 12001)
+        # make X array
+        X, x_col_sums = build_X_array(train_df)
+
+        # make W matrix
+        W = build_W_matrix(len(train_df_class_list))
+        
+        lrc = LogisticRegressionClassifier(
+                                        m=train_df.shape[0], 
+                                        k=len(train_df_class_list), 
+                                        n=61188, eta=0.009, 
+                                        lamb=0.01, 
+                                        delta = delta,
+                                        X=X,
+                                        x_col_sums = x_col_sums,
+                                        Y=Y,
+                                        W=W
+                                        )
+
+        weights_array = lrc.create_weights(10000)
+        print(weights_array.shape)
+
+        class_list = lrc.classify(test_df)
+        write_csv(class_list, 'log_regression_classified', 12001, class_list.shape[0] + 12001)
 
 if __name__ == "__main__":
     main()
