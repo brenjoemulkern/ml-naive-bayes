@@ -2,8 +2,6 @@
 
 ## Project 2 for CS529 Spring 2022
 
-## Naive Bayes Classifier
-
 ### Description
 
 ### Running the Code
@@ -31,11 +29,18 @@ The above commands can also be run with specified training and testing files:
 
 <code>python main.py -lr training_file.csv testing_file.csv</code> will run Logistic Regression on specified files
 
+### Runtime
+
+The program will first read the training and testing files, which will take around 7-10 minutes.
+
+The logistic regression training will print updates at every 100 update steps (out of 10000) to indicate its progress.
+
 ### Output
 
-The program will classify the test data using Naive Bayes classification.  
+The program will classify the test data using Naive Bayes classification and/or Logistic Regression classification.  
 
-The classifications are written to a .csv in the root directory of the project, titled "naive_bayes_classified.csv".
+The Naive Bayes classifications are written to a .csv in the root directory of the project, titled "naive_bayes_classified.csv".
+The Logistic Regression classifications are written to a .csv in the root directory of the project, titled "log_regression_classified.csv".
 
 ## Logistic Regression
 
