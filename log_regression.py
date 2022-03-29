@@ -50,6 +50,13 @@ class LogisticRegressionClassifier:
 
         return self.W
 
+    def determine_important_features(self, weight_matrix):
+        # W is k by n+1; should sum down columns and divide by k to find average highest weights
+        coefficient_sums = weight_matrix.sum(axis=0)
+        mean_sums = coefficient_sums / weight_matrix.shape[0]
+        print(mean_sums)
+        return mean_sums
+
     def classify(self, test_data):
         print('Multiplying matrices...')
         test_matrix = test_data.to_numpy()
@@ -70,4 +77,16 @@ class LogisticRegressionClassifier:
         
         print('Finding maximums...')
         classes = np.argmax(classified_matrix, axis=1) + 1
+
+        print('Determining important features...')
+        feature_sums = self.determine_important_features(self.W.toarray())
+        best_features = []
+        for i in range (0, 100):
+            max_feature = np.argmax(feature_sums)
+            best_features.append(max_feature + 1)
+            feature_sums = np.delete(feature_sums, [max_feature])
+            print(feature_sums.shape)
+        
+        print(best_features)
+            
         return classes
