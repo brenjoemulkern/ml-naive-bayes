@@ -4,6 +4,12 @@
 
 ### Description
 
+The program implements a Naive Bayes classification algorithm and a Logistic Regression algorithm.
+
+The Naive Bayes calculates the MLE of Y class data and the MAP of X|Y and classifies each document one row at a time.
+
+The Logistic Regression uses matrix multiplication to represent the X data and weight matrix W to calculate probabilities, then undergoes 10000 update steps of gradient descent.
+
 ### Running the Code
 
 The program will search for .csv files in the data directory of the repo.
@@ -41,7 +47,3 @@ The program will classify the test data using Naive Bayes classification and/or 
 
 The Naive Bayes classifications are written to a .csv in the root directory of the project, titled "naive_bayes_classified.csv".
 The Logistic Regression classifications are written to a .csv in the root directory of the project, titled "log_regression_classified.csv".
-
-## Logistic Regression
-
-### Description
