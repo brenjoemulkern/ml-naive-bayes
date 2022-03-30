@@ -39,6 +39,8 @@ The above commands can also be run with specified training and testing files:
 
 The program will first read the training and testing files, which will take around 7-10 minutes.
 
+The naive bayes training will print updates at every 100 documents classified (out of ~6700) to indicate its progress.
+
 The logistic regression training will print updates at every 100 update steps (out of 10000) to indicate its progress.
 
 ### Output
