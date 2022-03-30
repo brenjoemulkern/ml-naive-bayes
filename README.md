@@ -41,13 +41,13 @@ For validation, the second command line argument must be '-val'.
 
 The above command can be used with a single specified training file:
 
-<code>python main.py -val training_file.py</code>
+<code>python main.py -val training_file.csv</code>
 
 Also, it can be combined with '-nb' or '-lr':
 
-<code>python main.py -val -nb training_file.py</code> will run Naive Bayes with the specified file
+<code>python main.py -val -nb training_file.csv</code> will run Naive Bayes with the specified file
 
-<code>python main.py -val -lr training_file.py</code> will run Logistic Regression with the specified file
+<code>python main.py -val -lr training_file.csv</code> will run Logistic Regression with the specified file
 
 <code>python main.py -val -nb</code> will run Naive Bayes with default file
 
