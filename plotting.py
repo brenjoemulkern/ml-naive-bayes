@@ -20,3 +20,11 @@ plt.title('Logistic Regression Accuracy: Lambda = 0.01')
 plt.xlabel('Eta Value')
 plt.ylabel('Accuracy')
 plt.savefig('lr_val_results/lr_acc_eta_plot.png')
+
+# lr_lamb_data = pd.read_csv('lr_val_results/lr_acc_lamb.csv')
+
+# plt.plot(lr_lamb_data['lambda'], lr_lamb_data['acc'])
+# plt.title('Logistic Regression Accuracy: Eta = 0.01')
+# plt.xlabel('Lambda Value')
+# plt.ylabel('Accuracy')
+# plt.savefig('lr_val_results/lr_acc_lamb_plot.png')

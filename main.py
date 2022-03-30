@@ -157,8 +157,10 @@ def main():
     """ run this block for naive bayes """
     if run_nb == 1:
         print('Running Naive Bayes Classification')
+        
+        b = 0.01
         # Naive Bayes Classification Code
-        nbc = NaiveBayesClassifier(sparse_train_data)
+        nbc = NaiveBayesClassifier(sparse_train_data, b)
         class_list = []
 
         # classify each row in the test data
@@ -168,7 +170,7 @@ def main():
             if row[0] % 100 == 0:
                 print('Classifying document', row[0])
 
-        write_csv(class_list, 'naive_bayes_classified', 12001, len(class_list) + 12001)
+        write_csv(class_list, 'naive_bayes_classified_beta_' + str(b), 12001, len(class_list) + 12001)
     
     """ run this block for log regression """
     if run_lr == 1:

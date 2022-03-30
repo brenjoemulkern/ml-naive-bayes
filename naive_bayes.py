@@ -4,8 +4,9 @@ import scipy.sparse as scp
 
 class NaiveBayesClassifier:
 
-    def __init__(self, data):
+    def __init__(self, data, beta):
         self.prob_y_list = (self.compute_mle_y(data))
+        self.beta = beta
 
     def compute_mle_y(self, data: scp.csr_matrix):
         # create empty list for probabilities of different classes
@@ -24,7 +25,7 @@ class NaiveBayesClassifier:
         return prob_y_list
 
     def compute_map_xy(self, data: scp.csr_matrix, vocab_size: int, class_id: int):
-        beta = 1/vocab_size
+        beta = self.beta
         alpha = beta + 1
         
         # to avoid looping, represent data as array and perform operations on all elements in array
@@ -36,7 +37,7 @@ class NaiveBayesClassifier:
         numerator = summed_xs[0:, 1:61189] + (alpha - 1)
 
         # denominator is total words plus alpha-1 times vocabulary size
-        denominator = total_words + (beta * vocab_size)
+        denominator = total_words + ((alpha - 1) * vocab_size)
 
         # map_xy is an array, where each element is x_i
         map_xy = numerator / denominator
