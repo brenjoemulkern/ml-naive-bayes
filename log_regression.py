@@ -1,4 +1,3 @@
-from cgi import test
 import numpy as np
 import pandas as pd
 import scipy.sparse as scp
@@ -81,12 +80,13 @@ class LogisticRegressionClassifier:
         # matrix multiplication: Y * W transpose
         classified_sparse_matrix = sparse_normal_matrix @ (self.W.transpose())
         classified_matrix = classified_sparse_matrix.toarray()
-        print(classified_matrix)
         
         print('Finding maximums...')
         classes = np.argmax(classified_matrix, axis=1) + 1
 
         print('Determining important features...')
+
+        # implementation of method to find 100 most important features
         feature_sums = self.determine_important_features(self.W.toarray())
         best_features = []
         for i in range (0, 100):
@@ -94,6 +94,10 @@ class LogisticRegressionClassifier:
             best_features.append(max_feature + 1)
             feature_sums = np.delete(feature_sums, [max_feature])
         
+        # save features as csv
+        word_dict = {'wordID': best_features}
+        words_df = pd.DataFrame(word_dict)
+        words_df.to_csv('important_words.csv')
         print(best_features)
             
         return classes

@@ -19,12 +19,14 @@ def build_dataframe(csv_file):
     return d_frame
 
 def split_training_data(training_data: pd.DataFrame):
+    # 80-20 split of training data for validation
     split_training_df = training_data.iloc[:9601, :]
     split_testing_df = training_data.iloc[9601:, :61189]
 
     return split_training_df, split_testing_df
 
 def get_truth_data(training_data: pd.DataFrame):
+    # only used once to make truth data csv
     truth = training_data.iloc[9601:, 61189:]
     truth_np = truth.to_numpy()
     write_csv(truth_np.flatten(), 'ground_truth_data', 12001, truth_np.shape[0] + 12001)
@@ -40,6 +42,7 @@ def partition_data(data: pd.DataFrame, class_index: int):
     return partitioned_data
 
 def build_delta_matrix(class_array):
+    # one-hot encoding of classes
     delta_row_list = []
     for i in class_array:
         row = np.zeros(20, dtype=int)
@@ -50,6 +53,7 @@ def build_delta_matrix(class_array):
     return delta_array.transpose()
 
 def build_X_array(data):
+    # remove first column, normalize, then add column of only ones
     data = np.asarray(data)[:, 1:61189]
     ones_column = np.array([np.ones(data.shape[0], dtype=float)])
     x_col_sums = data.sum(axis = 0)
@@ -59,11 +63,13 @@ def build_X_array(data):
     return scp.csr_matrix(X_array), x_col_sums
 
 def build_W_matrix(row_count):
+    # create numpy array of random weights
     W = np.random.rand(row_count, 61189)
     W[:, -1] = 0
     return scp.csr_matrix(W)
 
 def write_csv(class_list, filename, start_row, end_row):
+    # write csv starting at 12001 for first column
     print('Writing csv')
     filename = filename + '.csv'
     class_indices = np.arange(start_row, end_row)
@@ -79,7 +85,7 @@ def main():
     run_nb = 0
     run_lr = 0
 
-
+    # no args, runs both nb and lr, default files
     if len(sys.argv) == 1:
         training_file = 'training.csv'
         testing_file = 'testing.csv'
@@ -87,54 +93,79 @@ def main():
         run_nb = 1
         run_lr = 1
     
+    # one arg, used for validation, default file
     elif len(sys.argv) == 2 and sys.argv[1] == '-val':
         training_file = 'training.csv'
         process_data = 1
         run_nb = 1
         run_lr = 1
 
+    # one arg, used for running only nb, default files
     elif len(sys.argv) == 2 and sys.argv[1] == '-nb':
         training_file = 'training.csv'
         testing_file = 'testing.csv'
         process_data = 0
         run_nb = 1
 
+    # one arg, used for running only lr, default files
     elif len(sys.argv) == 2 and sys.argv[1] == '-lr':
         training_file = 'training.csv'
         testing_file = 'testing.csv'
         process_data = 0
         run_nb = 1
-   
+    
+    # two args, used for validaton, default files, nb only
     elif len(sys.argv) == 3 and sys.argv[1] == '-val' and sys.argv[2] == '-nb':
         training_file = 'training.csv'
         testing_file = 'testing.csv'
         process_data = 1
         run_nb = 1
 
+    # two args, used for validaton, default files, lr only
     elif len(sys.argv) == 3 and sys.argv[1] == '-val' and sys.argv[2] == '-lr':
         training_file = 'training.csv'
         testing_file = 'testing.csv'
         process_data = 1
         run_lr = 1
 
+    # two args, used for validation, custom file
     elif len(sys.argv) == 3 and sys.argv[1] == '-val' and sys.argv[2].endswith('.csv'):
         process_data = 1
+        training_file = sys.argv[2]
         run_lr = 1
 
+    # two args, used for validation, custom file, lr only
     elif len(sys.argv) == 3 and sys.argv[1].endswith('.csv') and sys.argv[2].endswith('.csv'):
         training_file = sys.argv[1]
         testing_file = sys.argv[2]
+        run_nb = 1
+        run_lr = 1
 
+    # three args, used to run nb only with custom files
     elif len(sys.argv) == 4 and sys.argv[1] == '-nb' and sys.argv[2].endswith('.csv') and sys.argv[3].endswith('.csv'):
         training_file = sys.argv[2]
         testing_file = sys.argv[3]
         run_nb = 1
 
+    # three args, used to run lr only with custom files
     elif len(sys.argv) == 4 and sys.argv[1] == '-lr' and sys.argv[2].endswith('.csv') and sys.argv[3].endswith('.csv'):
         training_file = sys.argv[2]
         testing_file = sys.argv[3]
         run_lr = 1
+
+    # three args, run validation and nb only, custom file
+    elif len(sys.argv) == 4 and sys.argv[1] == '-val' and sys.argv[2] == '-nb' and sys.argv[3].endswith('.csv'):
+        process_data = 1
+        training_file = sys.argv[3]
+        run_nb = 1
+
+    # three args, run validation and lr only, custom file
+    elif len(sys.argv) == 4 and sys.argv[1] == '-val' and sys.argv[2] == '-lr' and sys.argv[3].endswith('.csv'):
+        process_data = 1
+        training_file = sys.argv[3]
+        run_lr = 1
     
+    # catch all
     else:
         sys.exit('Please run program as specified in README with training and testing csv files as first and second command line arguments.')
 

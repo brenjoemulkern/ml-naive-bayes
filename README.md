@@ -35,6 +35,24 @@ The above commands can also be run with specified training and testing files:
 
 <code>python main.py -lr training_file.csv testing_file.csv</code> will run Logistic Regression on specified files
 
+For validation, the second command line argument must be '-val'.
+
+<code>python main.py -val</code> will run both Naive Bayes and Logistic Regression and will split the training file.
+
+The above command can be used with a single specified training file:
+
+<code>python main.py -val training_file.py</code>
+
+Also, it can be combined with '-nb' or '-lr':
+
+<code>python main.py -val -nb training_file.py</code> will run Naive Bayes with the specified file
+
+<code>python main.py -val -lr training_file.py</code> will run Logistic Regression with the specified file
+
+<code>python main.py -val -nb</code> will run Naive Bayes with default file
+
+<code>python main.py -val -lr</code> will run Logistic Regression with default file
+
 ### Runtime
 
 The program will first read the training and testing files, which will take around 7-10 minutes.
